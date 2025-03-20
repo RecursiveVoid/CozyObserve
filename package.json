@@ -1,5 +1,5 @@
 {
-  "name": "cozyobserver",
+  "name": "cozyobserve",
   "version": "0.0.1",
   "description": "Lightweight, observer",
   "main": "dist/index.cjs",
@@ -31,6 +31,7 @@
     "@rollup/plugin-wasm": "^6.2.2",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.9.0",
+    "benchmark": "^2.1.4",
     "jest": "^29.7.0",
     "prettier": "^3.4.2",
     "rollup": "^4.27.4",
