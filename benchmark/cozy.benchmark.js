@@ -1,13 +1,13 @@
 import Benchmark from 'benchmark';
-import { CozyObserve } from './dist/index.esm.js';
+import { CozyObserve } from '../dist/index.esm.js';
 
 const suite = new Benchmark.Suite();
 
-// Setup test data
+
 const observedObject = { name: 'Alice', age: 25 };
 const observedPrimitive = 10;
 
-// Sync Object Observation
+
 const syncObservedObj = CozyObserve.observe(observedObject, () => {});
 suite.add('Sync Object Observation', () => {
   syncObservedObj.age++;
@@ -28,13 +28,13 @@ suite.add(
   { defer: true }
 );
 
-// Sync Primitive Observation
+
 const syncObservedPrim = CozyObserve.observe(observedPrimitive, () => {});
 suite.add('Sync Primitive Observation', () => {
   syncObservedPrim.value++;
 });
 
-// Async Primitive Observation
+
 const asyncObservedPrim = CozyObserve.observe(10, () => {}, true);
 suite.add(
   'Async Primitive Observation',
@@ -45,7 +45,7 @@ suite.add(
   { defer: true }
 );
 
-// Run benchmarks
+
 suite
   .on('cycle', (event) => {
     console.log(String(event.target));

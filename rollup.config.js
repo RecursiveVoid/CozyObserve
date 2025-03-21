@@ -2,7 +2,7 @@ import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import typescript from '@rollup/plugin-typescript';
 import dts from 'rollup-plugin-dts';
-import wasm from '@rollup/plugin-wasm';
+import terser from '@rollup/plugin-terser';
 
 export default [
   {
@@ -22,13 +22,13 @@ export default [
     plugins: [
       resolve(),
       commonjs(),
-      wasm(),
       typescript({
         tsconfig: './tsconfig.json',
         declaration: true,
         declarationMap: false,
         noEmitOnError: true,
       }),
+      terser(),
     ],
   },
   {

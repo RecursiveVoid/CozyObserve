@@ -1,7 +1,7 @@
 {
   "name": "cozyobserve",
   "version": "0.0.1",
-  "description": "Lightweight, observer",
+  "description": "Fast, Lightweight, Simple Observer",
   "main": "dist/index.cjs",
   "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
@@ -11,24 +11,30 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx}\"",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "benchmark": "node benchmark/cozy.benchmark.js"
   },
   "keywords": [
     "async",
     "sync",
-    "Typescript"
+    "Typescript",
+    "Observer",
+    "Observable",
+    "store",
+    "Lightweight",
+    "fast"
   ],
   "author": "M. Ergin Turk",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/RecursiveVoid/CozyObserver.git"
+    "url": "https://github.com/RecursiveVoid/CozyObserve.git"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^28.0.1",
     "@rollup/plugin-node-resolve": "^15.3.0",
     "@rollup/plugin-typescript": "^12.1.2",
-    "@rollup/plugin-wasm": "^6.2.2",
+    "@rollup/plugin-terser": "^0.4.4",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.9.0",
     "benchmark": "^2.1.4",
@@ -43,7 +49,8 @@
   },
   "type": "module",
   "files": [
-    "dist/"
+    "dist/",
+    "!dist/core/"
   ],
   "exports": {
     ".": {
