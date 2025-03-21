@@ -1,6 +1,7 @@
+import { Callback } from './Callback';
 import { IOpservable } from './IObservable';
+import { ObserveOptions } from './ObserveOptions';
 
-type Callback<T = unknown> = (newValue: T, oldValue: T) => void;
 type SupportedTypes = object | Primitives;
 type Primitives = string | number | boolean;
 
@@ -16,10 +17,9 @@ class CozyObserve {
    * @returns A proxied object or an observable wrapper for primitives.
    */
   public static observe<T extends SupportedTypes>(
-    target: T,
-    callback: Callback<T>,
-    async = false
+    options: ObserveOptions<T>
   ): T {
+    const { target, callback, async } = options;
     return typeof target === 'object' && target !== null
       ? this._observeObject(target, callback, async)
       : (this._observePrimitive(
@@ -59,7 +59,7 @@ class CozyObserve {
   private static _observeObject<T extends object>(
     obj: T,
     callback: Callback<T>,
-    async: boolean
+    async = false
   ): T {
     this._objectWatchers.set(obj, [
       ...(this._objectWatchers.get(obj) || []),
@@ -109,7 +109,7 @@ class CozyObserve {
   private static _observePrimitive<T extends Primitives>(
     value: T,
     callback: Callback<T>,
-    async: boolean
+    async = false
   ): IOpservable<T> {
     const id = Symbol().toString();
     this._primitiveWatchers[id] = [callback];
