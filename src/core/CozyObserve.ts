@@ -1,26 +1,34 @@
+/**
+ * CozyObserve provides reactive observation for objects and primitive values.
+ * It enables tracking changes and notifying registered callbacks.
+ */
 import { Callback } from './Callback';
 import { IOpservable } from './IObservable';
 import { ObserveOptions } from './ObserveOptions';
 
-type SupportedTypes = object | Primitives;
 type Primitives = string | number | boolean;
+type SupportedTypes = object | Primitives;
 
 class CozyObserve {
-  private static _objectWatchers = new WeakMap<object, Callback<any>[]>();
-  private static _primitiveWatchers: Record<string, Callback<any>[]> = {};
+  private static _proxyMap = new Map<
+    object,
+    { original: object; callbacks: Set<Callback<any>> }
+  >();
 
   /**
-   * Observes a target (object or primitive) and calls the callback when it changes.
-   * @param target The target to observe.
-   * @param callback The function to execute when the target changes.
-   * @param async If true, the callback is executed asynchronously.
-   * @returns A proxied object or an observable wrapper for primitives.
+   * Observes an object or primitive value and registers a callback for changes.
+   * @param {ObserveOptions<T>} options - The observe options containing target, callback, and async flag.
+   * @returns {T} The proxy of the observed object or primitive wrapper.
    */
-  public static observe<T extends SupportedTypes>(
-    options: ObserveOptions<T>
-  ): T {
-    const { target, callback, async } = options;
-    return typeof target === 'object' && target !== null
+  public static observe<T extends SupportedTypes>({
+    target,
+    callback,
+    async,
+  }: ObserveOptions<T>): T {
+    if (!target) {
+      return;
+    }
+    return typeof target === 'object'
       ? this._observeObject(target, callback, async)
       : (this._observePrimitive(
           target as Primitives,
@@ -30,133 +38,123 @@ class CozyObserve {
   }
 
   /**
-   * Stops observing a target (object or primitive).
-   * @param target The target to unobserve.
-   * @param callback Optional. The specific callback to remove. If not provided, all callbacks are removed.
+   * Stops observing an object or primitive value.
+   * @param {T} target - The target to unobserve.
+   * @param {Callback<T>} [callback] - The specific callback to remove, or all if undefined.
    */
   public static unobserve<T extends SupportedTypes>(
     target: T,
     callback?: Callback<T>
   ): void {
-    typeof target === 'object' && target !== null
-      ? this._unobserveObject(target, callback)
-      : this._unobservePrimitive(
-          {
-            value: target as Primitives,
-            __id: Symbol().toString(),
-          },
-          callback as Callback<Primitives>
-        );
+    if (!target) return;
+    for (const proxy of this._findAllProxies(target)) {
+      const entry = this._proxyMap.get(proxy);
+      if (!entry) continue;
+      callback ? entry.callbacks.delete(callback) : entry.callbacks.clear();
+      if (!entry.callbacks.size) this._cleanupProxy(proxy);
+    }
   }
 
-  /**
-   * Observes an object and notifies listeners on property changes.
-   * @param obj The object to observe.
-   * @param callback The function to call when a property changes.
-   * @param async If true, the callback is executed asynchronously.
-   * @returns A proxied object with observation capabilities.
-   */
+  private static *_findAllProxies(target: any): Iterable<object> {
+    for (const [proxy, entry] of this._proxyMap.entries()) {
+      if (
+        proxy === target ||
+        entry.original === target ||
+        (typeof entry.original === 'object' &&
+          'value' in entry.original &&
+          entry.original.value === target)
+      ) {
+        yield proxy;
+      }
+    }
+  }
+
+  private static _cleanupProxy(proxy: object): void {
+    const entry = this._proxyMap.get(proxy);
+    if (!entry) return;
+    entry.callbacks.clear();
+    this._proxyMap.delete(proxy);
+    if (typeof entry.original === 'object' && 'value' in entry.original) {
+      (entry.original as any).value = undefined;
+    }
+  }
+
   private static _observeObject<T extends object>(
     obj: T,
     callback: Callback<T>,
     async = false
   ): T {
-    this._objectWatchers.set(obj, [
-      ...(this._objectWatchers.get(obj) || []),
-      callback,
-    ]);
-    return new Proxy(obj, {
+    for (const [proxy, entry] of this._proxyMap.entries()) {
+      if (entry.original === obj) {
+        entry.callbacks.add(callback);
+        return proxy as T;
+      }
+    }
+    const callbacks = new Set([callback]);
+    const proxy = new Proxy(obj, {
       set: (target, prop, value) => {
         if (target[prop as keyof T] !== value) {
+          const oldValue = target[prop as keyof T];
           target[prop as keyof T] = value;
-          (async ? queueMicrotask : (fn: () => void) => fn)(() =>
-            this._objectWatchers
-              .get(target)
-              ?.forEach((cb) => cb(target, target))
-          );
+          const notify = () =>
+            callbacks.forEach((cb) =>
+              cb(target, { ...target, [prop]: oldValue })
+            );
+          async ? queueMicrotask(notify) : notify();
         }
         return true;
       },
+      get: (target, prop, receiver) => {
+        const value = Reflect.get(target, prop, receiver);
+        if (Array.isArray(target) && typeof value === 'function') {
+          return (...args: any[]) => {
+            const result = value.apply(target, args);
+            const notify = () =>
+              callbacks.forEach((cb) =>
+                cb(target, [...target] as unknown as T)
+              );
+            async ? queueMicrotask(notify) : notify();
+            return result;
+          };
+        }
+        return value;
+      },
     });
+    this._proxyMap.set(proxy, { original: obj, callbacks });
+    return proxy as T;
   }
 
-  /**
-   * Stops observing an object.
-   * @param obj The object to stop observing.
-   * @param callback Optional. The specific callback to remove. If not provided, all callbacks are removed.
-   */
-  private static _unobserveObject<T extends object>(
-    obj: T,
-    callback?: Callback<T>
-  ): void {
-    const callbacks = this._objectWatchers.get(obj);
-    if (!callbacks) return;
-    this._objectWatchers.set(
-      obj,
-      callback ? callbacks.filter((cb) => cb !== callback) : []
-    );
-    if (!callback || !this._objectWatchers.get(obj)!.length)
-      this._objectWatchers.delete(obj);
-  }
-
-  /**
-   * Observes a primitive value (string, number, boolean) and notifies listeners on changes.
-   * @param value The primitive value to observe.
-   * @param callback The function to call when the value changes.
-   * @param async If true, the callback is executed asynchronously.
-   * @returns An observable wrapper around the primitive value.
-   */
   private static _observePrimitive<T extends Primitives>(
     value: T,
     callback: Callback<T>,
     async = false
   ): IOpservable<T> {
-    const id = Symbol().toString();
-    this._primitiveWatchers[id] = [callback];
-
-    return new Proxy(
-      { value, __id: id },
-      {
-        set: (target, prop, newValue) => {
-          if (prop === 'value' && target.value !== newValue) {
-            const oldValue = target.value;
-            target.value = newValue;
-            this._primitiveWatchers[id]?.forEach((cb) =>
-              async
-                ? queueMicrotask(() => cb(newValue, oldValue))
-                : cb(newValue, oldValue)
-            );
-          }
-          return true;
-        },
-      }
-    );
+    const observable = { value, __id: crypto.randomUUID() };
+    const callbacks = new Set([callback]);
+    const proxy = new Proxy(observable, {
+      set: (target, prop, newValue) => {
+        if (prop === 'value' && target.value !== newValue) {
+          const oldValue = target.value;
+          target.value = newValue;
+          const notify = () =>
+            callbacks.forEach((cb) => cb(newValue, oldValue));
+          async ? queueMicrotask(notify) : notify();
+        }
+        return true;
+      },
+    });
+    this._proxyMap.set(proxy, { original: observable, callbacks });
+    return proxy;
   }
 
   /**
-   * Stops observing a primitive value.
-   * @param observed The observed primitive wrapper.
-   * @param callback Optional. The specific callback to remove. If not provided, all callbacks are removed.
-   */
-  private static _unobservePrimitive<T extends Primitives>(
-    observed: IOpservable<T>,
-    callback?: Callback<T>
-  ): void {
-    const id = observed.__id;
-    if (!this._primitiveWatchers[id]) return;
-    this._primitiveWatchers[id] = callback
-      ? this._primitiveWatchers[id].filter((cb) => cb !== callback)
-      : [];
-    if (!callback || !this._primitiveWatchers[id].length)
-      delete this._primitiveWatchers[id];
-  }
-
-  /**
-   * Removes all observers from all objects and primitives.
+   * Removes all active observers.
    */
   public static removeAllObservers(): void {
-    this._objectWatchers = new WeakMap();
-    this._primitiveWatchers = {};
+    this._proxyMap.forEach((entry, proxy) => {
+      entry.callbacks.clear();
+      this._cleanupProxy(proxy);
+    });
   }
 }
 
