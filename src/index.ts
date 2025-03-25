@@ -1,4 +1,13 @@
-export { CozyObserve } from './core/CozyObserve';
-export { IOpservable } from './core/IObservable';
-export { ObserveOptions } from './core/ObserveOptions';
-export { Callback } from './core/Callback';
+import { ComputeObserver } from './core/ComputeObserver';
+import { AsyncObserver } from './core/AsyncObserver';
+import { Observer } from './core/Observer';
+import { ObserverSubscription } from './core/ObserverSubscription';
+import { deepObserver } from './core/CozyObserve';
+
+export {
+  AsyncObserver,
+  ComputeObserver,
+  deepObserver,
+  Observer,
+  ObserverSubscription,
+};
