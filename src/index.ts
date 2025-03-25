@@ -10,7 +10,7 @@ import {
   useComputeObserver,
   useDeepObserver,
   useObserver,
-} from './core/react/hooks';
+} from './react/hooks';
 
 export {
   AsyncObserver,

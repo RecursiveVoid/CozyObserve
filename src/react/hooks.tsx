@@ -1,8 +1,8 @@
 import { JSX, useEffect, useState } from 'react';
-import { AsyncObserver } from '../AsyncObserver';
-import { ComputeObserver } from '../ComputeObserver';
-import { Observer } from '../Observer';
-import { ObserverSubscription } from '../ObserverSubscription';
+import { AsyncObserver } from '../core/AsyncObserver';
+import { ComputeObserver } from '../core/ComputeObserver';
+import { Observer } from '../core/Observer';
+import { ObserverSubscription } from '../core/ObserverSubscription';
 
 /**
  * Custom hook to observe an Observer instance and re-render on value change.
