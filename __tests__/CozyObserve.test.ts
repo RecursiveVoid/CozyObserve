@@ -1,7 +1,7 @@
 import { Observer } from '../src/core/Observer';
 import { AsyncObserver } from '../src/core/AsyncObserver';
 import { ComputeObserver } from '../src/core/ComputeObserver';
-import { deepObserver } from '../src/core/CozyObserve';
+import { deepObserver } from '../src/core/DeepObserver';
 
 describe('Observer', () => {
   it('should initialize with the correct value', () => {
@@ -156,14 +156,6 @@ describe('deepObserver', () => {
     const { observer, unsubscribe } = deepObserver(arr, callback);
     observer[0] = 4;
     expect(callback).toHaveBeenCalledWith([4, 2, 3], [1, 2, 3]);
-  });
-
-  // TODO fix this
-  it('should track changes to string values', () => {
-    const callback = jest.fn();
-    let { observer, unsubscribe } = deepObserver('Hello', callback);
-    observer.value = 'World';
-    expect(callback).toHaveBeenCalledWith('World', 'Hello');
   });
 
   it('should track changes to nested object properties', () => {

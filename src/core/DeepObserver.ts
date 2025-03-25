@@ -1,6 +1,12 @@
 import { ObserverCallback } from './ObserverCallback';
 import { ObserverSubscription } from './ObserverSubscription';
-
+/**
+ * @template T
+ * Creates a deep observer for an object, notifying the callback on property changes.
+ * @param {T} obj - The object to observe.
+ * @param {ObserverCallback<T>} callback - The function to call when changes occur.
+ * @returns {ObserverSubscription<T>} An object containing the proxy and an unsubscribe function.
+ */
 export function deepObserver<T extends object>(
   obj: T,
   callback: ObserverCallback<T>

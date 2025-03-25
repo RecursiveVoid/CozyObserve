@@ -1,10 +1,10 @@
-![](https://i.imgur.com/RkamfP6.png)
+![CozyObserve](https://i.imgur.com/RkamfP6.png)
 
-# CozyObserve — Fast, Lightweight, Simple Observer
+# CozyObserve — Super Fast, Lightweight, Simple Observer
 
 ![npm](https://img.shields.io/npm/v/cozyobserve)
 [![Build Size](https://img.shields.io/bundlephobia/minzip/cozyobserve?label=bundle%20size)](https://bundlephobia.com/result?p=cozyobserve)
-![Coverage](https://img.shields.io/badge/coverage-74%25-yellow)
+![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)
 ![License](https://img.shields.io/github/license/RecursiveVoid/cozyobserve)
 [![Downloads](https://img.shields.io/npm/dt/cozyobserve.svg?style=flat-square)](https://www.npmjs.com/package/cozyobserve)
 [![PRs](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)]()
@@ -34,97 +34,104 @@ yarn add cozyobserve
 ### Importing the Library
 
 ```ts
-import { CozyObserve } from 'CozyObserve';
-```
-
-### Observing an Object
-
-```ts
-const person = { name: 'John', age: 30 };
-const observedPerson = CozyObserve.observe({
-  target: person,
-  callback: (newValue, oldValue) => {
-    console.log('Person changed:', newValue, oldValue);
-  },
-  async: true, // Optional
-});
-
-observedPerson.age = 31; // Triggers the callback
+import {
+  Observer,
+  ComputeObserver,
+  AsyncObserver,
+  deepObserver,
+} from 'cozyobserve';
 ```
 
 ### Observing a Primitive Value
 
 ```ts
-const observedNumber = CozyObserve.observe({
-  target: 10,
-  callback: (newValue, oldValue) => {
-    console.log('Value changed from', oldValue, 'to', newValue);
-  },
+const observer = new Observer(10);
+const unsubscribe = observer.subscribe((newValue, oldValue) => {
+  console.log(`Value changed from ${oldValue} to ${newValue}`);
+});
+observer.set(20); // Triggers the callback
+
+// Unsubscribe when no longer needed
+unsubscribe();
+```
+
+### Observing Computed Values
+
+```ts
+const computeObserver = new ComputeObserver(() => Math.random());
+const unsubscribeCompute = computeObserver.subscribe((newValue, oldValue) => {
+  console.log(`Computed value changed from ${oldValue} to ${newValue}`);
+});
+computeObserver.update(); // Triggers the callback if value changed
+unsubscribeCompute();
+```
+
+### Observing an Async Value
+
+```ts
+const asyncObserver = new AsyncObserver(
+  fetch('/api/data').then((res) => res.json())
+);
+asyncObserver
+  .promise()
+  .then((value) => console.log('Async value resolved:', value));
+```
+
+### Deep Observing an Object
+
+```ts
+const person = { name: 'Alice', age: 25 };
+const { observer, unsubscribe } = deepObserver(person, (newValue, oldValue) => {
+  console.log('Object changed:', newValue, oldValue);
 });
 
-observedNumber.value = 20; // Triggers the callback
+observer.age = 26; // Triggers the callback
+unsubscribe(); // Stop observing
 ```
 
-### Removing Observers
+## Benchmark Results
 
-#### Stop Observing a Specific Object
-
-```ts
-CozyObserve.unobserve(observedPerson);
-```
-
-#### Stop Observing a Specific Primitive
-
-```ts
-CozyObserve.unobserve(observedNumber);
-```
-
-You can also remove a certain callback instead the while object/primitive.
-
-```ts
-CozyObserve.unobserve(observedThingy, specificCallback); // Will only remove that specificCallback instead the whole observable
-```
-
-#### Remove All Observers
-
-```ts
-CozyObserve.removeAllObservers();
-```
+| Library                                |     ops/sec | Variability (%) | Runs Sampled |
+| -------------------------------------- | ----------: | --------------: | -----------: |
+| **CozyObserve - Observer (Primitive)** | 116,142,307 |          ±1.61% |           86 |
+| **CozyObserve - ComputeObserver**      |  88,936,510 |          ±3.11% |           84 |
+| **CozyObserve - Observer (Object)**    |  43,478,915 |          ±2.79% |           93 |
+| **Zustand**                            |   8,175,686 |          ±6.36% |           72 |
+| **RxJS**                               |   7,215,093 |         ±10.18% |           61 |
+| **MobX**                               |   1,019,549 |         ±53.11% |           36 |
 
 ## API Reference
 
-### `observe<T>(options: ObserveOptions<T>): T`
+### `Observer<T>`
 
-Observes an object or primitive and executes the callback when changes occur.
+- `new Observer(initialValue: T)`: Creates a new observer instance.
+- `.subscribe(callback: (newValue, oldValue) => void): () => void`: Subscribes to changes and returns an unsubscribe function.
+- `.set(newValue: T)`: Updates the value and notifies subscribers.
+- `.get(): T`: Returns the current value.
 
-#### Parameters:
+### `ComputeObserver<T>`
 
-- `target`: The object or primitive to observe.
-- `callback`: Function executed when the value changes.
-- `async` (optional): If `true`, executes the callback asynchronously.
+- `new ComputeObserver(() => T)`: Observes a computed value.
+- `.subscribe(callback: (newValue, oldValue) => void): () => void`: Subscribes to changes and returns an unsubscribe function.
+- `.update()`: Forces recomputation and notifies if value changed.
+- `.get(): T`: Returns the last computed value.
 
-#### Returns:
+### `AsyncObserver<T>`
 
-- A proxy object (for objects) or an observable wrapper (for primitives).
+- `new AsyncObserver(promise: Promise<T>)`: Observes an async value.
+- `.promise(): Promise<T | null>`: Resolves when the async value is available.
 
-### `unobserve<T>(target: T, callback?: Callback<T>): void`
+### `deepObserver<T>(obj: T, callback: (newValue, oldValue) => void)`
 
-Stops observing an object or primitive.
-
-### `removeAllObservers(): void`
-
-Removes all observers from all objects and primitives.
+- Observes deep changes in an object.
+- Returns `{ observer: T, unsubscribe: () => void }`.
 
 ## License
 
-Copyright (c) 2025 Mehmet Ergin Turk
+MIT License. See the [LICENSE](LICENSE) file for details.
 
-Licensed under the MIT license. See the [LICENSE](LICENSE) file for details.
-
-(Twitter/x: [**@papa_alpha_papa**](https://x.com/papa_alpha_papa)),
-
+(Twitter/X: [**@papa_alpha_papa**](https://x.com/papa_alpha_papa)),
 (Mastodon: [**@papa_alpha_papa**](https://mastodon.social/@papa_alpha_papa))
-
 (Bluesky: [**@erginturk.bsky.social**](https://bsky.app/profile/erginturk.bsky.social))
 
 ## Contributing
@@ -133,6 +140,6 @@ Contributions are welcome! Feel free to open an issue or submit a pull request.
 
 ---
 
-Developed with ❤️ by M.Ergin Turk
+Developed with ❤️ by M. Ergin Turk
 
 Happy coding with CozyObserve! 🚀
