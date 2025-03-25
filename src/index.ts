@@ -4,6 +4,13 @@ import { Observer } from './core/Observer';
 import { ObserverSubscription } from './core/ObserverSubscription';
 import { deepObserver } from './core/DeepObserver';
 import { ObserverCallback } from './core/ObserverCallback';
+import {
+  Observe,
+  useAsyncObserver,
+  useComputeObserver,
+  useDeepObserver,
+  useObserver,
+} from './core/react/hooks';
 
 export {
   AsyncObserver,
@@ -12,4 +19,9 @@ export {
   Observer,
   ObserverSubscription,
   ObserverCallback,
+  useObserver,
+  Observe,
+  useAsyncObserver,
+  useComputeObserver,
+  useDeepObserver,
 };

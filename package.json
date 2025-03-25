@@ -1,6 +1,6 @@
 {
   "name": "cozyobserve",
-  "version": "0.1.0-alpha",
+  "version": "0.2.0-alpha",
   "description": "Super Fast, Lightweight, Simple Observer",
   "main": "dist/index.cjs",
   "module": "dist/index.esm.js",
@@ -43,6 +43,7 @@
     "@rollup/plugin-typescript": "^12.1.2",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.9.0",
+    "@types/react": "^19.0.12",
     "benchmark": "^2.1.4",
     "jest": "^29.7.0",
     "mobx": "^6.13.7",

@@ -74,6 +74,11 @@ suite.add('Zustand', () => {
   zustandStore.increment();
 });
 
+const subscription = rxjsSubject.subscribe(() => {});
+suite.add('RxJS', () => {
+  rxjsSubject.next(rxjsSubject.getValue() + 1);
+});
+
 suite
   .on('cycle', (event) => {
     console.log(String(event.target.name + ' 🟢🔵🔴'));
@@ -90,3 +95,4 @@ suite
 
 unsubscribeDeep();
 unsubscribeObserver();
+subscription.unsubscribe();
