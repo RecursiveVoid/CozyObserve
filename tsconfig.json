@@ -11,6 +11,11 @@
     "importHelpers": true,
     "noEmitHelpers": true,
     "strictNullChecks": false,
-    "jsx": "react"
+    "jsx": "react-jsx",
+    "jsxImportSource": "react",
+    "allowSyntheticDefaultImports": true,
+    "declaration": false,
+    "removeComments": true,
+    "stripInternal": true
   }
 }

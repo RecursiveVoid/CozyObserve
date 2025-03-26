@@ -1,6 +1,6 @@
 {
   "name": "cozyobserve",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Super Fast, Lightweight, Simple Observer",
   "main": "dist/index.cjs",
   "module": "dist/index.esm.js",

@@ -1,4 +1,4 @@
-import { JSX, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AsyncObserver } from '../core/AsyncObserver';
 import { ComputeObserver } from '../core/ComputeObserver';
 import { Observer } from '../core/Observer';
