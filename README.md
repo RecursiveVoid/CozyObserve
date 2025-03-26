@@ -13,7 +13,13 @@
 
 **Currently in preview version**
 
-CozyObserve is a lightweight and efficient library for observing changes in objects and primitive values. It provides a simple API to listen to changes and execute callbacks accordingly.
+CozyObserve is a lightweight and efficient library for observing changes in objects and primitive values. It provides a simple API to listen to changes and execute callbacks accordingly. **It supports both Vanilla JavaScript and React** with built-in hooks for seamless integration.
+
+## What COZY Stands For
+
+COZY stands for **Compact, On-point, Zero-overhead, Yet-powerful**.
+
+A **fine-tailored** ecosystem of TypeScript libraries designed for your everyday needs—lightweight, efficient, and built to get the job done. No bloat, just pure performance. 🚀
 
 ## Installation
 
@@ -29,7 +35,9 @@ Or using yarn:
 yarn add cozyobserve
 ```
 
-## Usage
+---
+
+# Vanilla JavaScript / TypeScript Usage
 
 ### Importing the Library
 
@@ -89,42 +97,102 @@ observer.age = 26; // Triggers the callback
 unsubscribe(); // Stop observing
 ```
 
-## Benchmark Results
+---
 
-| Library                                |     ops/sec | Variability (%) | Runs Sampled |
-| -------------------------------------- | ----------: | --------------: | -----------: |
-| **CozyObserve - Observer (Primitive)** | 116,142,307 |          ±1.61% |           86 |
-| **CozyObserve - ComputeObserver**      |  88,936,510 |          ±3.11% |           84 |
-| **CozyObserve - Observer (Object)**    |  43,478,915 |          ±2.79% |           93 |
-| **Zustand**                            |   8,175,686 |          ±6.36% |           72 |
-| **RxJS**                               |   7,215,093 |         ±10.18% |           61 |
-| **MobX**                               |   1,019,549 |         ±53.11% |           36 |
+# React Usage
+
+CozyObserve provides built-in React hooks to make state management seamless.
+
+### Importing React Hooks
+
+```tsx
+import {
+  useObserver,
+  useComputeObserver,
+  useAsyncObserver,
+  useDeepObserver,
+  Observe,
+} from 'cozyobserve';
+```
+
+### Observing a Value with `useObserver`
+
+```tsx
+import { Observer, useObserver } from 'cozyobserve';
+
+const counter = new Observer(0);
+
+function Counter() {
+  const count = useObserver(counter);
+  return (
+    <div>
+      <p>Count: {count}</p>
+      <button onClick={() => counter.set(count + 1)}>Increment</button>
+    </div>
+  );
+}
+```
+
+### Observing Computed Values with `useComputeObserver`
+
+```tsx
+import { ComputeObserver, useComputeObserver } from 'cozyobserve';
+
+const randomValue = new ComputeObserver(() => Math.random());
+
+function RandomDisplay() {
+  const value = useComputeObserver(randomValue);
+  return (
+    <div>
+      <p>Random Value: {value}</p>
+      <button onClick={() => randomValue.update()}>Recalculate</button>
+    </div>
+  );
+}
+```
+
+### Observing Async Data with `useAsyncObserver`
+
+```tsx
+import { AsyncObserver, useAsyncObserver } from 'cozyobserve';
+
+const asyncData = new AsyncObserver(
+  fetch('/api/data').then((res) => res.json())
+);
+
+function AsyncComponent() {
+  const data = useAsyncObserver(asyncData);
+  return <div>{data ? JSON.stringify(data) : 'Loading...'}</div>;
+}
+```
+
+### Observing Deep Objects with `useDeepObserver`
+
+```tsx
+import { deepObserver, useDeepObserver } from 'cozyobserve';
+
+const person = { name: 'Alice', age: 25 };
+const deepObservedPerson = deepObserver(person, (newValue) => {
+  console.log('Person updated:', newValue);
+});
+
+function PersonComponent() {
+  const observedPerson = useDeepObserver(deepObservedPerson);
+  return (
+    <div>
+      <p>Name: {observedPerson.name}</p>
+      <p>Age: {observedPerson.age}</p>
+      <button onClick={() => (observedPerson.age += 1)}>Increase Age</button>
+    </div>
+  );
+}
+```
+
+---
 
 ## API Reference
 
-### `Observer<T>`
-
-- `new Observer(initialValue: T)`: Creates a new observer instance.
-- `.subscribe(callback: (newValue, oldValue) => void): () => void`: Subscribes to changes and returns an unsubscribe function.
-- `.set(newValue: T)`: Updates the value and notifies subscribers.
-- `.get(): T`: Returns the current value.
-
-### `ComputeObserver<T>`
-
-- `new ComputeObserver(() => T)`: Observes a computed value.
-- `.subscribe(callback: (newValue, oldValue) => void): () => void`: Subscribes to changes and returns an unsubscribe function.
-- `.update()`: Forces recomputation and notifies if value changed.
-- `.get(): T`: Returns the last computed value.
-
-### `AsyncObserver<T>`
-
-- `new AsyncObserver(promise: Promise<T>)`: Observes an async value.
-- `.promise(): Promise<T | null>`: Resolves when the async value is available.
-
-### `deepObserver<T>(obj: T, callback: (newValue, oldValue) => void)`
-
-- Observes deep changes in an object.
-- Returns `{ observer: T, unsubscribe: () => void }`.
+Refer to the API reference in the Vanilla section for method details.
 
 ## License
 
