@@ -115,6 +115,31 @@ import {
 } from 'cozyobserve';
 ```
 
+### Using the <Observe> Component
+
+```tsx
+import { Observe, Observer } from 'cozyobserve';
+
+const count = new Observer(0);
+
+function Counter() {
+  return (
+    <Observe observer={count}>
+      {(value) => (
+        <div>
+          <p>Count: {value}</p>
+          <button onClick={() => count.set(value + 1)}>Increment</button>
+        </div>
+      )}
+    </Observe>
+  );
+}
+```
+
+Observe is a React component that listens to an Observer and re-renders its child function when the value changes.
+
+It makes it easy to work with observers declaratively inside React components.
+
 ### Observing a Value with `useObserver`
 
 ```tsx
