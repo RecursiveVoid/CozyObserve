@@ -1,21 +1,18 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
+    "target": "ES2020",
     "module": "ESNext",
-    "moduleResolution": "Node",
-    "esModuleInterop": true,
-    "skipLibCheck": true,
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022", "DOM"],
     "strict": true,
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "importHelpers": true,
-    "noEmitHelpers": true,
-    "strictNullChecks": false,
+    "noUncheckedIndexedAccess": false,
+    "noImplicitOverride": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true,
     "jsx": "react-jsx",
-    "jsxImportSource": "react",
-    "allowSyntheticDefaultImports": true,
-    "declaration": false,
-    "removeComments": true,
-    "stripInternal": true
-  }
+    "types": ["node"],
+    "noEmit": true
+  },
+  "include": ["src", "test"]
 }
